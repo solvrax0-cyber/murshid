@@ -1,8 +1,16 @@
 .env
+.env.*
+!.env.example
 __pycache__/
 *.pyc
 data/index/
 data/uploads/
 data/*.sqlite3
+data/*.sqlite3-*
+data/ingestion_report.json
+*.log
+*.pid
+.pytest_cache/
+tmp/
 .venv/
 Claude outputs/

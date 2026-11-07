@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>مُرشِد · المرشد الأكاديمي الذكي · جامعة الخليل</title>
+<link rel="icon" href="/static/hu-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f5f7f5; --panel:#ffffff; --ink:#111111; --muted:#5c625e; --line:#dfe5e0;
+    --brand:#2E7D32; --brand-ink:#1B5E20; --brand-2:#e8f3e9; --alert:#C62828; --alert-bg:#fdecec; --alert-line:#f3c2c2; --bad:#C62828;
+    --radius:14px; --shadow:0 1px 2px rgba(0,0,0,.04),0 4px 16px rgba(0,0,0,.04);
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}
+  html,body{margin:0;height:100%}
+  body{font-family:"IBM Plex Sans Arabic","Segoe UI",Tahoma,"Noto Naskh Arabic",sans-serif;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.75}
+  header{display:flex;align-items:center;gap:14px;padding:12px 20px;background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+  .logo{width:36px;height:36px;border-radius:10px;background:var(--brand);color:#fff;display:grid;place-items:center;font-weight:700}
+  .logo-img{width:44px;height:44px;object-fit:contain;flex:none}
+  header h1{font-size:17px;margin:0;font-weight:600}
+  header small{display:block;color:var(--muted);font-size:12.5px;font-weight:400}
+  nav{margin-inline-start:auto;display:flex;gap:6px}
+  nav button,.btn{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:7px 14px;border-radius:10px;cursor:pointer}
+  nav button[aria-selected=true]{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .btn.primary{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  main{max-width:860px;margin:0 auto;padding:18px 16px 140px}
+  /* sidebar (saved conversations) + login */
+  .side{position:fixed;top:69px;bottom:0;inset-inline-start:0;width:250px;background:var(--panel);border-inline-end:1px solid var(--line);padding:12px;overflow-y:auto;z-index:4}
+  .side .btn{width:100%}
+  .side h4{margin:14px 4px 6px;font-size:13px;color:var(--muted);font-weight:500}
+  .conv{display:flex;align-items:center;gap:4px;border-radius:8px}
+  .conv button.open{flex:1;text-align:start;font:inherit;font-size:14px;border:0;background:none;padding:7px 8px;border-radius:8px;cursor:pointer;color:var(--ink);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+  .conv.active button.open,.conv button.open:hover{background:var(--brand-2)}
+  .conv button.del{border:0;background:none;cursor:pointer;color:var(--muted);font-size:15px;padding:4px 6px;border-radius:6px}
+  .conv button.del:hover{color:var(--alert)}
+  body.has-side main{margin-inline-start:max(266px,calc((100% - 860px)/2))}
+  body.has-side .composer{inset-inline-start:250px}
+  #menuBtn{display:none}
+  .who{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px}
+  .login-wrap{position:fixed;inset:0;background:var(--bg);z-index:20;display:grid;place-items:center;padding:16px}
+  .login-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;width:100%;max-width:380px;text-align:center}
+  .login-card img{width:96px;height:96px}
+  .login-card label{display:block;text-align:start;font-size:14px;margin:12px 0 4px}
+  .login-card input{width:100%;font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:10px}
+  .login-card .btn{width:100%;margin-top:14px}
+  .linkish{background:none;border:0;color:var(--brand-ink);cursor:pointer;font:inherit;font-size:14px;margin-top:10px;text-decoration:underline}
+  @media (max-width:759px){
+    .side{display:none;top:0;z-index:15;box-shadow:var(--shadow)}
+    body.side-open .side{display:block}
+    body.has-side main{margin-inline-start:auto}
+    body.has-side .composer{inset-inline-start:0}
+    body.has-side #menuBtn{display:inline-block}
+  }
+  .view{display:none}.view.active{display:block}
+  .welcome{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow)}
+  .welcome{text-align:center}
+  .welcome-logo{width:96px;height:96px;object-fit:contain;display:block;margin:4px auto 10px}
+  .welcome h2{margin:0 0 6px;font-size:20px}
+  .welcome .chips{justify-content:center}
+  .welcome p{margin:0 0 14px;color:var(--muted)}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--bg);padding:6px 12px;border-radius:999px;cursor:pointer;color:var(--ink)}
+  .chip:hover{border-color:var(--brand);color:var(--brand)}
+  .msg{margin:16px 0;display:flex}
+  .msg.user{justify-content:flex-start}
+  .msg.bot{justify-content:flex-end}
+  .bubble{max-width:88%;padding:12px 16px;border-radius:var(--radius);box-shadow:var(--shadow)}
+  .user .bubble{background:var(--brand);color:#fff;border-end-start-radius:4px}
+  .bot .bubble{background:var(--panel);border:1px solid var(--line);border-end-end-radius:4px;width:88%}
+  .bubble p{margin:0 0 8px}.bubble p:last-child{margin:0}
+  .bubble table{border-collapse:collapse;margin:8px 0;font-size:14px;width:100%}
+  .bubble td,.bubble th{border:1px solid var(--line);padding:4px 8px;text-align:start}
+  .bubble ol,.bubble ul{margin:4px 0 8px;padding-inline-start:22px}
+  sup.cite{display:inline-block;min-width:20px;padding:0 5px;margin:0 2px;font-size:11.5px;line-height:18px;text-align:center;border-radius:6px;background:var(--brand-2);color:var(--brand-ink);cursor:pointer;font-weight:600;vertical-align:super}
+  sup.cite:hover,sup.cite:focus-visible{background:var(--brand);color:#fff;outline:none}
+  .fallback{display:flex;gap:8px;align-items:flex-start;background:var(--alert-bg);border:1px solid var(--alert-line);color:var(--alert);border-radius:10px;padding:6px 10px;margin-bottom:10px;font-size:13.5px;font-weight:500}
+  .refused{background:var(--alert-bg)!important;border-color:var(--alert-line)!important}
+  .refused .tag{color:var(--alert)}
+  .tag{font-size:12.5px;color:var(--muted);display:flex;gap:10px;align-items:center;margin-top:8px;flex-wrap:wrap}
+  .sources{margin-top:10px;border-top:1px dashed var(--line);padding-top:8px}
+  .src{border:1px solid var(--line);border-radius:10px;margin:6px 0;background:var(--bg)}
+  .src summary{cursor:pointer;padding:6px 10px;font-size:14px;list-style:none}
+  .src summary::-webkit-details-marker{display:none}
+  .src summary b{color:var(--brand-ink)}
+  .src .snip{padding:0 12px 10px;font-size:13.5px;color:var(--muted);white-space:pre-wrap}
+  .src.flash{outline:2px solid var(--brand)}
+  .fb{border:0;background:none;cursor:pointer;font-size:15px;padding:0 2px;opacity:.6}.fb:hover,.fb.on{opacity:1}
+  .debug{font-size:12px;color:var(--muted);margin-top:6px}
+  .debug table{font-size:12px}
+  .composer{position:fixed;inset-inline:0;bottom:0;background:linear-gradient(transparent,var(--bg) 30%);padding:18px 16px 16px}
+  .composer form{max-width:860px;margin:0 auto;display:flex;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:8px;box-shadow:var(--shadow)}
+  .composer textarea{flex:1;font:inherit;border:0;resize:none;outline:none;padding:6px 8px;max-height:140px;background:transparent;color:var(--ink)}
+  .composer .hint{max-width:860px;margin:6px auto 0;font-size:12px;color:var(--muted);text-align:center}
+  .typing{display:inline-flex;gap:4px}.typing i{width:6px;height:6px;border-radius:50%;background:var(--muted);animation:b 1s infinite}
+  .typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+  @keyframes b{0%,100%{opacity:.25}50%{opacity:1}}
+  @media (prefers-reduced-motion:reduce){.typing i{animation:none}}
+  /* admin */
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin-bottom:14px;box-shadow:var(--shadow)}
+  .card h3{margin:0 0 10px;font-size:16px}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+  .kpi{background:var(--bg);border-radius:12px;padding:12px}
+  .kpi b{display:block;font-size:24px;font-variant-numeric:tabular-nums}
+  .kpi span{font-size:13px;color:var(--muted)}
+  .list{width:100%;border-collapse:collapse;font-size:14px}
+  .list td{padding:6px 4px;border-bottom:1px solid var(--line)}
+  .list td.n{width:60px;text-align:center;font-variant-numeric:tabular-nums;color:var(--brand);font-weight:600}
+  .bar{height:6px;background:var(--brand-2);border-radius:4px;margin-top:4px}.bar>i{display:block;height:100%;background:var(--brand);border-radius:4px}
+  input[type=password],input[type=file]{font:inherit;font-size:14px;padding:7px 10px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .muted{color:var(--muted);font-size:13.5px}
+  .err{color:var(--bad);font-size:14px}
+  @media (max-width:520px){
+    header{flex-wrap:wrap;padding:10px 12px;gap:10px}
+    .logo-img{width:36px;height:36px}
+    header h1{font-size:15px}
+    nav{margin-inline-start:0;width:100%}
+    nav button{flex:1}
+    main{padding:12px 12px 170px}
+    .bubble{max-width:96%}.bot .bubble{width:96%}
+    .composer{padding:12px 10px 10px}
+    .composer .btn{padding:7px 10px}
+  }
+</style>
+</head>
+<body>
+<header>
+  <img class="logo-img" src="/static/hu-logo.png" alt="شعار جامعة الخليل" width="44" height="44">
+  <div><h1>مُرشِد · جامعة الخليل <small>المرشد الأكاديمي الذكي · إجابات من مستندات الجامعة مع المصدر</small></h1></div>
+  <nav role="tablist">
+    <button role="tab" aria-selected="true" data-view="chat">المحادثة</button>
+    <button role="tab" aria-selected="false" data-view="admin">لوحة الإدارة</button>
+  </nav>
+  <span class="who" id="who" hidden><span id="whoName"></span><button class="btn" id="logout" type="button">خروج</button></span>
+  <button class="btn" id="menuBtn" type="button" aria-label="قائمة المحادثات" aria-controls="side">☰</button>
+</header>
+
+<aside class="side" id="side" hidden aria-label="المحادثات">
+  <button class="btn primary" id="sideNew" type="button">+ محادثة جديدة</button>
+  <h4>محادثاتك السابقة</h4>
+  <div id="convList"><p class="muted">لا توجد محادثات بعد</p></div>
+</aside>
+
+<div class="login-wrap" id="login" hidden>
+  <form class="login-card" id="loginForm">
+    <img src="/static/hu-logo.png" alt="شعار جامعة الخليل" width="96" height="96">
+    <h2 style="margin:6px 0 2px">أهلاً بك في مُرشِد</h2>
+    <p class="muted" style="margin:0">سجّل دخولك لحفظ محادثاتك والعودة إليها</p>
+    <label for="sidIn">الرقم الجامعي (8 أرقام)</label>
+    <input id="sidIn" inputmode="numeric" pattern="\d{8}" maxlength="8" required autocomplete="username">
+    <label for="nameIn">الاسم</label>
+    <input id="nameIn" minlength="2" maxlength="60" required autocomplete="name">
+    <button class="btn primary" type="submit">دخول</button>
+    <p class="err" id="loginErr"></p>
+    <button class="linkish" type="button" id="guest">المتابعة كضيف دون حفظ المحادثات</button>
+    <p class="muted" style="font-size:12px;margin:10px 0 0">تسجيل للعرض فقط، بلا كلمة مرور. النسخة الإنتاجية ستستخدم الدخول الموحد للجامعة (SSO).</p>
+  </form>
+</div>
+
+<main>
+  <section id="chat" class="view active" aria-live="polite">
+    <div class="welcome" id="welcome">
+      <img class="welcome-logo" src="/static/hu-logo.png" alt="" width="96" height="96">
+      <h2>أهلاً! اسألني عن أنظمة الجامعة 👋</h2>
+      <p>أجيب من دليل الطالب واللوائح والخطط الدراسية فقط، وأذكر المصدر ورقم الصفحة أو المادة. إذا لم أجد المعلومة أقول لك ذلك بوضوح.</p>
+      <div class="chips" id="examples"></div>
+    </div>
+    <div id="thread"></div>
+  </section>
+
+  <section id="admin" class="view">
+    <div class="card">
+      <h3>تسجيل دخول الإدارة</h3>
+      <div class="row">
+        <input id="token" type="password" placeholder="رمز الإدارة (ADMIN_TOKEN)" autocomplete="current-password">
+        <button class="btn primary" id="loadStats">دخول وتحديث</button>
+        <span id="adminErr" class="err"></span>
+      </div>
+      <p class="muted" id="health"></p>
+    </div>
+    <div id="dash" hidden>
+      <div class="card"><h3>نظرة عامة</h3><div class="kpis" id="kpis"></div></div>
+      <div class="card"><h3>الأسئلة الأكثر تكراراً</h3><table class="list" id="topQ"></table></div>
+      <div class="card"><h3>فجوات المعرفة · أسئلة لم يجد النظام إجابتها</h3>
+        <p class="muted">هذه أسئلة يطرحها الطلبة وليست في المستندات: فرصة لتحديث الدليل أو إضافة مستند.</p>
+        <table class="list" id="gaps"></table></div>
+      <div class="card"><h3>رفع مستند جديد</h3>
+        <div class="row"><input type="file" id="file" accept=".pdf,.md,.txt"><button class="btn primary" id="upload">رفع وإعادة الفهرسة</button></div>
+        <p class="muted" id="uploadMsg"></p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="composer" id="composer">
+  <form id="form">
+    <textarea id="q" rows="1" placeholder="اكتب سؤالك… بالفصحى أو بالعامية" aria-label="سؤالك"></textarea>
+    <button class="btn" type="button" id="newChat" title="محادثة جديدة">جديد</button>
+    <button class="btn primary" type="submit" id="send">إرسال</button>
+  </form>
+  <div class="hint">مشروع طلابي من طلبة جامعة الخليل (IEEE RAG Hackathon)، وليس خدمة رسمية للجامعة. مُرشِد قد يخطئ؛ للقرارات المهمة راجع دائرة القبول والتسجيل.</div>
+</div>
+
+<script>
+const EXAMPLES = [
+  "نجحت بالبرمجة الكينونية وأنا بسنة ثانية، شو المواد اللي بقدر أسجلها الفصل الجاي؟",
+  "معدلي 1.8، كم ساعة أقدر أسجل؟",
+  "حتى أي أسبوع يمكنني الانسحاب من مساق؟",
+  "How many absences are allowed in a course?"
+];
+const $ = s => document.querySelector(s);
+const store = { get(k){try{return localStorage.getItem(k)}catch{return null}}, set(k,v){try{localStorage.setItem(k,v)}catch{}} };
+let sessionId = store.get("murshid_sid") || "";
+let busy = false;
+
+function esc(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function md(text){
+  const lines = esc(text).split("\n"); let html = "", list = null, table = [];
+  const inline = s => s.replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/_\((.+?)\)_/g,'<span class="muted">($1)</span>')
+    .replace(/\[(\d{1,2})\]/g,'<sup class="cite" data-n="$1" tabindex="0">$1</sup>');
+  const flushList = () => { if(list){html += `</${list}>`; list=null} };
+  const flushTable = () => {
+    if(!table.length) return;
+    const rows = table.filter(r=>!/^\|?\s*:?-{2,}/.test(r)).map(r=>r.replace(/^\||\|$/g,"").split("|").map(c=>inline(c.trim())));
+    html += "<table>" + rows.map((r,i)=>"<tr>"+r.map(c=>i?`<td>${c}</td>`:`<th>${c}</th>`).join("")+"</tr>").join("") + "</table>"; table=[];
+  };
+  for(const raw of lines){
+    const l = raw.trim();
+    if(l.startsWith("|")){flushList(); table.push(l); continue} else flushTable();
+    let m;
+    if((m = l.match(/^(\d+)[.\-)]\s+(.*)/))){ if(list!=="ol"){flushList(); html+="<ol>"; list="ol"} html+=`<li>${inline(m[2])}</li>`; continue }
+    if((m = l.match(/^[-*•]\s+(.*)/))){ if(list!=="ul"){flushList(); html+="<ul>"; list="ul"} html+=`<li>${inline(m[1])}</li>`; continue }
+    flushList();
+    if(l) html += `<p>${inline(l.replace(/^#+\s*/,""))}</p>`;
+  }
+  flushList(); flushTable(); return html;
+}
+
+function addUser(text){
+  $("#welcome").hidden = true;
+  const d = document.createElement("div"); d.className = "msg user";
+  d.innerHTML = `<div class="bubble" dir="auto">${esc(text)}</div>`; $("#thread").append(d); d.scrollIntoView({behavior:"smooth",block:"end"});
+}
+function addBot(){
+  const d = document.createElement("div"); d.className = "msg bot";
+  d.innerHTML = `<div class="bubble" dir="auto"><span class="typing" aria-label="يبحث في لوائح الجامعة"><i></i><i></i><i></i></span> <span class="muted">يبحث في لوائح الجامعة…</span></div>`;
+  $("#thread").append(d); d.scrollIntoView({behavior:"smooth",block:"end"}); return d.firstElementChild;
+}
+function sourceLabel(label){
+  return (label||"").replace(/\bsample\b|تجريبي(?:ة)?/gi, "").replace(/\s{2,}/g, " ").trim();
+}
+function renderAnswer(b, a){
+  b.classList.toggle("refused", a.refused);
+  const srcs = (a.citations||[]).map(c=>`
+    <details class="src" id="src-${a.log_id}-${c.n}">
+      <summary><b>[${c.n}]</b> ${esc(sourceLabel(c.label))}${c.year?` <span class="muted">· إصدار ${c.year}</span>`:""}</summary>
+      <div class="snip">${esc(c.snippet)}…</div>
+    </details>`).join("");
+  const dbg = (a.retrieved||[]).map(r=>`<tr><td>${r.rank}</td><td>${esc(sourceLabel(r.label))}</td><td>${r.bm25}</td><td>${r.dense}</td><td>${r.coverage}</td></tr>`).join("");
+  const status = a.refused ? "⚠️ لم أجد إجابة موثوقة في المستندات" : (a.grounded ? "✅ إجابة مثبتة بالمصدر" : "⚠️ لم أتمكن من توثيق المصدر");
+  const fallback = a.mode === "offline" ? `<div class="fallback" role="status"><span aria-hidden="true">⚠</span><span><b>وضع احتياطي:</b> النموذج اللغوي غير متاح الآن، فهذا اقتباس مباشر من المستند مع مصدره.</span></div>` : "";
+  const norm = s => (s||"").replace(/[\s؟?.!،,]+/g," ").trim();
+  const understood = a.rewritten && a.intent === "academic" && norm(a.rewritten) !== norm(a.question_asked||"") ? `<div class="muted understood" dir="auto">فهمت سؤالك كـ: ${esc(a.rewritten)}</div>` : "";
+  b.innerHTML = fallback + md(a.answer) + understood +
+    (srcs ? `<div class="sources"><div class="muted">المصادر</div>${srcs}</div>` : "") +
+    `<div class="tag"><span>${status}</span><span>· ${(a.latency_ms/1000).toFixed(1)} ث</span><button class="fb copy" type="button" aria-label="نسخ الإجابة" title="نسخ الإجابة">📋</button>
+      ${a.log_id?`<span>· هل أفادتك؟ <button class="fb" data-v="1" aria-label="مفيدة">👍</button><button class="fb" data-v="-1" aria-label="غير مفيدة">👎</button></span>`:""}
+      ${dbg?`<details class="debug"><summary>تفاصيل الاسترجاع</summary><p>الصياغة الموحدة: ${esc(a.rewritten||"")}</p><table><tr><th>#</th><th>المقطع</th><th>BM25</th><th>Dense</th><th>تغطية</th></tr>${dbg}</table></details>`:""}
+    </div>`;
+  b.querySelectorAll("sup.cite").forEach(s=>{
+    const go = ()=>{ const el = document.getElementById(`src-${a.log_id}-${s.dataset.n}`); if(el){el.open=true; el.classList.add("flash"); el.scrollIntoView({behavior:"smooth",block:"center"}); setTimeout(()=>el.classList.remove("flash"),1200)} };
+    s.onclick = go; s.onkeydown = e=>{ if(e.key==="Enter") go() };
+  });
+  const cp = b.querySelector(".copy");
+  if(cp) cp.onclick = async ()=>{ try{ await navigator.clipboard.writeText(a.answer); cp.textContent = "✓"; setTimeout(()=>cp.textContent="📋",1200) }catch{ cp.title = "تعذر النسخ" } };
+  b.querySelectorAll(".fb:not(.copy)").forEach(btn=>btn.onclick = async ()=>{
+    b.querySelectorAll(".fb").forEach(x=>x.classList.remove("on")); btn.classList.add("on");
+    await fetch("/api/feedback",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({log_id:a.log_id,value:+btn.dataset.v})});
+  });
+}
+async function ask(text){
+  if(busy || !text.trim()) return; busy = true; $("#send").disabled = true;
+  addUser(text); const b = addBot();
+  try{
+    const r = await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json",...authH()},body:JSON.stringify({question:text,session_id:sessionId||null})});
+    if(!r.ok){ const e = await r.json().catch(()=>({})); throw new Error(e.detail || ("HTTP "+r.status)) }
+    const a = await r.json(); a.question_asked = text; sessionId = a.session_id; store.set("murshid_sid", sessionId); renderAnswer(b, a); if(auth) loadConvs();
+  }catch(e){
+    const offline = typeof navigator !== "undefined" && navigator.onLine === false;
+    b.innerHTML = `<span class="err">${offline ? "يبدو أن الاتصال بالإنترنت مقطوع. تحقق من الشبكة ثم أعد إرسال سؤالك." : "لم أتمكن من الوصول إلى مُرشِد الآن. انتظر لحظة ثم أعد إرسال سؤالك."}</span>`;
+    $("#q").value = text;  // keep the question so the student can resend it
+  }
+  busy = false; $("#send").disabled = false; $("#q").focus();
+}
+$("#form").onsubmit = e => { e.preventDefault(); const t = $("#q").value; $("#q").value = ""; autosize(); ask(t) };
+$("#q").addEventListener("keydown", e => { if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); $("#form").requestSubmit() } });
+const autosize = () => { const t=$("#q"); t.style.height="auto"; t.style.height=Math.min(t.scrollHeight,140)+"px" };
+$("#q").addEventListener("input", autosize);
+const newChat = () => { sessionId = ""; store.set("murshid_sid",""); $("#thread").innerHTML = ""; $("#welcome").hidden = false; document.body.classList.remove("side-open"); markActive(); $("#q").focus() };
+$("#newChat").onclick = newChat; $("#sideNew").onclick = newChat;
+
+// ---- demo login + saved conversations
+let auth = null; try{ auth = JSON.parse(localStorage.getItem("murshid_auth")||"null") }catch{ auth = null }
+const authH = () => auth ? {"Authorization":"Bearer "+auth.token} : {};
+function showAuth(){
+  const logged = !!auth;
+  $("#login").hidden = true; $("#side").hidden = !logged; $("#who").hidden = !logged;
+  document.body.classList.toggle("has-side", logged);
+  if(logged){ $("#whoName").textContent = auth.name; loadConvs() }
+}
+function markActive(){ document.querySelectorAll(".conv").forEach(c=>c.classList.toggle("active", c.dataset.id===sessionId)) }
+async function loadConvs(){
+  try{
+    const r = await fetch("/api/conversations",{cache:"no-store",headers:authH()});
+    if(r.status===401){ logout(); return }
+    const items = await r.json();
+    $("#convList").innerHTML = items.length ? "" : `<p class="muted">لا توجد محادثات بعد</p>`;
+    items.forEach(c=>{
+      const row = document.createElement("div"); row.className="conv"; row.dataset.id=c.id;
+      row.innerHTML = `<button class="open" type="button" dir="auto" title="${esc(c.title)}">${esc(c.title)}</button><button class="del" type="button" aria-label="حذف المحادثة">×</button>`;
+      row.querySelector(".open").onclick = ()=>openConv(c.id);
+      row.querySelector(".del").onclick = async ()=>{ await fetch("/api/conversations/"+c.id,{method:"DELETE",headers:authH()}); if(sessionId===c.id) newChat(); loadConvs() };
+      $("#convList").append(row);
+    });
+    markActive();
+  }catch{ /* offline: keep the current list */ }
+}
+async function openConv(id){
+  const r = await fetch("/api/conversations/"+id,{headers:authH()}); if(!r.ok) return;
+  const msgs = await r.json(); sessionId = id; store.set("murshid_sid", id);
+  $("#thread").innerHTML = ""; $("#welcome").hidden = true;
+  msgs.forEach(m=>{ if(m.role==="user") addUser(m.content); else { const b = addBot(); b.innerHTML = md(m.content) } });
+  document.body.classList.remove("side-open"); markActive(); $("#q").focus();
+}
+function logout(){ auth = null; try{ localStorage.removeItem("murshid_auth") }catch{} newChat(); $("#side").hidden = true; $("#who").hidden = true; document.body.classList.remove("has-side"); $("#login").hidden = false }
+$("#logout").onclick = logout;
+$("#menuBtn").onclick = ()=>document.body.classList.toggle("side-open");
+$("#guest").onclick = ()=>{ try{ sessionStorage.setItem("murshid_guest","1") }catch{} $("#login").hidden = true };
+$("#loginForm").onsubmit = async e=>{
+  e.preventDefault(); $("#loginErr").textContent = "";
+  try{
+    const r = await fetch("/api/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({student_id:$("#sidIn").value.trim(),name:$("#nameIn").value.trim()})});
+    if(!r.ok){ $("#loginErr").textContent = "تأكد أن الرقم الجامعي 8 أرقام وأن الاسم حرفان على الأقل."; return }
+    auth = await r.json(); try{ localStorage.setItem("murshid_auth", JSON.stringify(auth)) }catch{}
+    newChat(); showAuth();
+  }catch{ $("#loginErr").textContent = "تعذر الاتصال بالخادم، تحقق من الشبكة وحاول مجدداً." }
+};
+let guest = false; try{ guest = sessionStorage.getItem("murshid_guest")==="1" }catch{}
+if(auth) showAuth(); else if(!guest) $("#login").hidden = false;
+EXAMPLES.forEach(x => { const c = document.createElement("button"); c.className="chip"; c.textContent=x; c.onclick=()=>ask(x); $("#examples").append(c) });
+
+// tabs
+document.querySelectorAll("nav button").forEach(t => t.onclick = () => {
+  document.querySelectorAll("nav button").forEach(x=>x.setAttribute("aria-selected", x===t));
+  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active", v.id===t.dataset.view));
+  $("#composer").hidden = t.dataset.view !== "chat";
+  if(t.dataset.view==="admin") loadHealth();
+});
+
+// admin
+async function loadHealth(){
+  try{ const h = await (await fetch("/api/health")).json();
+    $("#health").textContent = `المستندات المفهرسة: ${h.sources.length} · المقاطع: ${h.chunks} · البحث الدلالي: ${h.dense?h.embedding_model:"معطّل (BM25 فقط)"} · النموذج: ${h.llm}${(h.llm_fallbacks||[]).length?" (بدائل: "+h.llm_fallbacks.join("، ")+")":""} · آخر استدعاء: ${h.llm_last_call&&h.llm_last_call.ok!==null?(h.llm_last_call.ok?"✅ "+h.llm_last_call.model+(h.llm_last_call.cached?" (من الكاش)":""):"❌ وضع احتياطي ("+h.llm_last_call.status+")"):"—"}${h.indexing?" · جارٍ إعادة الفهرسة…":""}`;
+  }catch{}
+}
+function listRows(items, key){
+  const max = Math.max(1, ...items.map(i=>i.count));
+  return items.length ? items.map(i=>`<tr><td>${esc(i[key])}<div class="bar"><i style="width:${100*i.count/max}%"></i></div></td><td class="n">${i.count}</td></tr>`).join("") : `<tr><td class="muted">لا توجد بيانات بعد</td></tr>`;
+}
+$("#loadStats").onclick = async () => {
+  $("#adminErr").textContent = "";
+  const r = await fetch("/api/admin/stats",{cache:"no-store",headers:{"X-Admin-Token":$("#token").value}});
+  if(!r.ok){ const e = await r.json().catch(()=>({})); $("#adminErr").textContent = e.detail || "خطأ"; return }
+  const s = await r.json(); $("#dash").hidden = false;
+  const k = [["الطلبة المسجلون",s.registered_students??0],["الأسئلة",s.total_questions],["الجلسات",s.sessions],["نسبة الرفض",Math.round(s.refusal_rate*100)+"%"],["👍 / 👎",`${s.thumbs_up} / ${s.thumbs_down}`],["زمن الاستجابة (الوسيط)",(s.p50_latency_ms/1000).toFixed(1)+" ث"]];
+  $("#kpis").innerHTML = k.map(([a,b])=>`<div class="kpi"><b>${b}</b><span>${a}</span></div>`).join("");
+  $("#topQ").innerHTML = listRows(s.top_questions,"question");
+  $("#gaps").innerHTML = listRows(s.knowledge_gaps,"question");
+};
+$("#upload").onclick = async () => {
+  const f = $("#file").files[0]; if(!f) return;
+  const fd = new FormData(); fd.append("file", f); $("#uploadMsg").textContent = "جارٍ الرفع…";
+  const r = await fetch("/api/admin/upload",{method:"POST",headers:{"X-Admin-Token":$("#token").value},body:fd});
+  const j = await r.json().catch(()=>({})); $("#uploadMsg").textContent = r.ok ? `${j.message}: ${j.saved}` : (j.detail||"خطأ");
+  setTimeout(loadHealth, 1500);
+};
+</script>
+</body>
+</html>
