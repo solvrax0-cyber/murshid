@@ -1,0 +1,12 @@
+fastapi>=0.110
+uvicorn[standard]>=0.29
+python-multipart>=0.0.9
+python-dotenv>=1.0
+pdfplumber>=0.11
+pymupdf>=1.24
+rank-bm25>=0.2.2
+numpy>=1.26
+faiss-cpu>=1.8
+sentence-transformers>=3.0
+openai>=1.40
+pytest>=8.0
